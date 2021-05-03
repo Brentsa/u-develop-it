@@ -22,8 +22,30 @@ const db = mysql.createConnection(
     console.log('Connected to the election database.')
 );
 
+//db query method that returns rows matching the query or an error
 db.query('SELECT * FROM candidates', (err, rows)=>{
-    console.log(rows);
+    // console.log(rows);
+});
+
+//db query to select a single candidate
+db.query('SELECT * FROM candidates WHERE id=1', (err, row)=>{
+    // if(err){console.log(err);}
+    // console.log(row)
+});
+
+//db query to delete a candidate
+db.query('DELETE FROM candidates WHERE id = ?', 1, (err, result)=>{
+    // if(err){console.log(err)};
+    // console.log(result);
+});
+
+//Create a candidate
+const sql = `INSERT INTO candidates (id, first_name, last_name, industry_connected) VALUES (?,?,?,?)`;
+const params = [1, 'Ronald', 'Firbank', 1];
+
+db.query(sql, params, (err, result)=>{
+    //if(err){console.log(err);}
+    //console.log(result);
 });
 
 //Catch all route that must be used last to return a NOT FOUND error
