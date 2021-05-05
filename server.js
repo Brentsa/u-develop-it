@@ -25,7 +25,9 @@ const db = mysql.createConnection(
 
 //Return all candidates JSON
 app.get('/api/candidates', (req, res)=>{
-    const sql = 'SELECT * FROM candidates';
+    const sql = `SELECT candidates.*, parties.name AS party_name
+                 FROM candidates
+                 LEFT JOIN parties ON candidates.party_id = parties.id`;
 
     //db query method that returns rows matching the query or an error
     db.query(sql, (err, rows)=>{
@@ -40,7 +42,11 @@ app.get('/api/candidates', (req, res)=>{
 
 //Return a single candidate JSON
 app.get('/api/candidates/:id', (req, res)=>{
-    const sql = 'SELECT * FROM candidates WHERE id = ?';
+    const sql = `SELECT candidates.*, parties.name AS party_name
+                 FROM candidates
+                 LEFT JOIN parties ON candidates.party_id = parties.id
+                 WHERE candidates.id = ?`;
+
     const params = [req.params.id];
 
     //db query to select a single candidate
