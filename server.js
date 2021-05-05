@@ -23,6 +23,9 @@ const db = mysql.createConnection(
     console.log('Connected to the election database.')
 );
 
+//ROUTES
+//==========================================================================================================
+
 //Return all candidates JSON
 app.get('/api/candidates', (req, res)=>{
     const sql = `SELECT candidates.*, parties.name AS party_name
@@ -60,6 +63,27 @@ app.get('/api/candidates/:id', (req, res)=>{
     });
 });
 
+//Create a candidate
+app.post('/api/candidate', ({body}, res)=>{
+    const errors = inputCheck(body, 'first_name', 'last_name', 'industry_connected');
+    if(errors){
+        res.status(400).json({error: errors});
+        return;
+    }
+
+    const sql = 'INSERT INTO candidates (first_name, last_name, industry_connected) VALUE (?,?,?)';
+    const params = [body.first_name, body.last_name, body.industry_connected];
+
+    db.query(sql, params, (err, result)=>{
+        if(err){
+            res.status(400).json({ error: err.message });
+            return;
+        }
+        
+        res.json({message: 'Candidate added', data: body});
+    });
+});
+
 app.put('/api/candidates/:id', (req, res)=>{
 
     const errors = inputCheck(req.body, 'party_id');
@@ -83,6 +107,25 @@ app.put('/api/candidates/:id', (req, res)=>{
         }
         else{
             res.json({message: "Success!", data: req.body, change: result.affectedRows});
+        }
+    });
+});
+
+//Delete a single candidate from the database
+app.delete('/api/candidates/:id', (req, res)=>{
+    const sql = 'DELETE FROM candidates WHERE id = ?';
+    const params = [req.params.id];
+
+    //db query used to delete candidate if they are found
+    db.query(sql, params, (err, result)=>{
+        if(err){
+            res.status(400).json({error: err.message});
+        }
+        else if(!result.affectedRows){
+            res.json({message: "Candidate was not found."});
+        }
+        else{
+            res.json({message: "Candidate deleted.", changes: result.affectedRows, id: req.params.id});
         }
     });
 });
@@ -112,25 +155,6 @@ app.get('/api/party/:id', (req, res)=>{
     });
 });
 
-//Delete a single candidate from the database
-app.delete('/api/candidates/:id', (req, res)=>{
-    const sql = 'DELETE FROM candidates WHERE id = ?';
-    const params = [req.params.id];
-
-    //db query used to delete candidate if they are found
-    db.query(sql, params, (err, result)=>{
-        if(err){
-            res.status(400).json({error: err.message});
-        }
-        else if(!result.affectedRows){
-            res.json({message: "Candidate was not found."});
-        }
-        else{
-            res.json({message: "Candidate deleted.", changes: result.affectedRows, id: req.params.id});
-        }
-    });
-});
-
 app.delete("/api/party/:id", (req, res)=>{
     const sql = `DELETE FROM parties WHERE id = ?`;
     const param = [req.params.id];
@@ -148,26 +172,8 @@ app.delete("/api/party/:id", (req, res)=>{
     });
 });
 
-//Create a candidate
-app.post('/api/candidate', ({body}, res)=>{
-    const errors = inputCheck(body, 'first_name', 'last_name', 'industry_connected');
-    if(errors){
-        res.status(400).json({error: errors});
-        return;
-    }
-
-    const sql = 'INSERT INTO candidates (first_name, last_name, industry_connected) VALUE (?,?,?)';
-    const params = [body.first_name, body.last_name, body.industry_connected];
-
-    db.query(sql, params, (err, result)=>{
-        if(err){
-            res.status(400).json({ error: err.message });
-            return;
-        }
-        
-        res.json({message: 'Candidate added', data: body});
-    });
-});
+//ROUTES END
+//==============================================================================================================
 
 //Catch all route that must be used last to return a NOT FOUND error
 app.use((req, res)=>{
