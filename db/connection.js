@@ -12,6 +12,7 @@ const db = mysql.createConnection(
         user: process.env.DB_USER,
         //MySQL password
         password: process.env.DB_PASS,
+        
         database: 'election'
     });
 
